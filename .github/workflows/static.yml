@@ -26,10 +26,11 @@ jobs:
         run: |
           dart pub global activate jaspr_cli
           jaspr build --verbose
-          
-      - name: Create _redirects file
+
+      - name: Add _redirects file for SPA routing
         run: |
-          echo '/* /index.html 404' > build/web/_redirects
+          mkdir -p build/jaspr
+          echo '/* /index.html 404' > build/jaspr/_redirects
 
       - name: Deploy to deploy branch (for Cloudflare Pages)
         run: |
