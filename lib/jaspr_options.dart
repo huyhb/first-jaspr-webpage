@@ -12,22 +12,6 @@ import 'package:first_jaspr_webpage/pages/home.dart' as prefix3;
 import 'package:first_jaspr_webpage/pages/not_found_page.dart' as prefix4;
 import 'package:first_jaspr_webpage/app.dart' as prefix5;
 
-/// Default [JasprOptions] for use with your jaspr project.
-///
-/// Use this to initialize jaspr **before** calling [runApp].
-///
-/// Example:
-/// ```dart
-/// import 'jaspr_options.dart';
-///
-/// void main() {
-///   Jaspr.initializeApp(
-///     options: defaultJasprOptions,
-///   );
-///
-///   runApp(...);
-/// }
-/// ```
 JasprOptions get defaultJasprOptions => JasprOptions(
   clients: {
     prefix2.About: ClientTarget<prefix2.About>('pages/about'),
