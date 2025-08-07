@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Để có thể tạo orphan branch và chuyển nhánh
 
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1.3
@@ -41,14 +43,27 @@ jobs:
           mkdir temp-deploy
           cp -r build/jaspr/* temp-deploy/
 
-          # Checkout nhánh deploy (orphan branch)
-          git fetch origin
-          git checkout --orphan deploy
+          # Lấy version từ pubspec.yaml
+          VERSION=$(grep '^version:' pubspec.yaml | cut -d ':' -f2 | cut -d '+' -f1 | xargs)
+          TODAY=$(date +"%d/%m/%Y %H:%M")
+          if [ -z "$VERSION" ]; then
+            echo "⚠️ Không tìm thấy version trong pubspec.yaml"
+            exit 1
+          fi
+          COMMIT_MSG="deploy version $VERSION - $TODAY"
+
+          # Tạo nhánh deploy (orphan)
+          git switch --orphan deploy
+          git reset --hard
           git rm -rf .
 
-          # Copy build vào gốc repo
+          # Copy build vào
           cp -r temp-deploy/* .
 
           git add .
-          git commit -m "Deploy to Cloudflare Pages"
+          git commit -m "$COMMIT_MSG"
           git push origin deploy --force
+
+          # Xóa temp
+          rm -rf temp-deploy
+      
