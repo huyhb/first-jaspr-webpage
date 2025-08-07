@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Quan trọng để có thể tạo orphan branch và chuyển branch an toàn
+          fetch-depth: 0
 
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1.3
@@ -36,23 +36,36 @@ jobs:
 
       - name: Deploy to deploy branch (for Cloudflare Pages)
         run: |
+          set -e
           git config user.name "huyhb"
-          git config user.email "huyhb@github.com"
+          git config user.email "huyhbs@github.com"
 
-          # Tạo thư mục tạm chứa build từ nhánh hiện tại
+          # Lưu commit message hiện tại của nhánh master
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          # Tạo thư mục tạm chứa build
           mkdir temp-deploy
           cp -r build/jaspr/* temp-deploy/
 
-          # Lấy commit message gần nhất
-          COMMIT_MSG=$(git log -1 --pretty=%B)
+          # Kiểm tra nếu nhánh deploy đã tồn tại trên origin
+          if git ls-remote --exit-code --heads origin deploy; then
+            # Nhánh deploy đã tồn tại
+            git fetch origin deploy
+            git checkout deploy
+          else
+            # Nhánh deploy chưa có, tạo từ nhánh hiện tại (master)
+            git checkout -b deploy
+          fi
 
-          # Tạo nhánh deploy (orphan)
-          git checkout deploy || git checkout -b deploy
+          # Xoá toàn bộ nội dung cũ trong deploy branch
           git rm -rf . || true
 
-          # Copy build từ thư mục tạm
+          # Copy build mới vào
           cp -r temp-deploy/* .
 
+          # Commit nếu có thay đổi
           git add .
-          git commit -m "$COMMIT_MSG"
-          git push origin deploy --force
+          git commit -m "$COMMIT_MSG" || echo "No changes to commit"
+
+          # Push lên deploy
+          git push origin deploy
