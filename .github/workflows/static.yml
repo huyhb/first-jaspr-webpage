@@ -60,9 +60,8 @@ jobs:
             git checkout --orphan deploy
           fi
 
-          # Xóa toàn bộ file trong branch (trừ .git)
-          rm -rf *
-          rm -rf .[^.]* || true
+          # Xóa toàn bộ nội dung (trừ thư mục .git)
+          find . -mindepth 1 ! -regex '^./\.git\(/.*\)?' -delete
 
           # Copy lại build từ thư mục tạm
           cp -r "$TEMP_DEPLOY_DIR"/* .
