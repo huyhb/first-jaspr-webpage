@@ -55,7 +55,10 @@ jobs:
           # Tạo nhánh deploy (orphan)
           git switch --orphan deploy
           git reset --hard
-          git rm -rf .
+
+          # Dọn sạch repo (không dùng git rm nữa)
+          rm -rf *
+          rm -rf .[!.]* ..?* || true
 
           # Copy build vào
           cp -r temp-deploy/* .
