@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Để có thể tạo orphan branch và chuyển nhánh
+          fetch-depth: 0  # Quan trọng để có thể tạo orphan branch và chuyển branch an toàn
 
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1.3
@@ -39,34 +39,23 @@ jobs:
           git config user.name "huyhb"
           git config user.email "huyhbs@github.com"
 
-          # Tạo thư mục tạm chứa build
+          # Tạo thư mục tạm chứa build từ nhánh hiện tại
           mkdir temp-deploy
           cp -r build/jaspr/* temp-deploy/
 
           # Lấy version từ pubspec.yaml
           VERSION=$(grep '^version:' pubspec.yaml | cut -d ':' -f2 | cut -d '+' -f1 | xargs)
           TODAY=$(date +"%d/%m/%Y %H:%M")
-          if [ -z "$VERSION" ]; then
-            echo "⚠️ Không tìm thấy version trong pubspec.yaml"
-            exit 1
-          fi
           COMMIT_MSG="deploy version $VERSION - $TODAY"
 
           # Tạo nhánh deploy (orphan)
           git switch --orphan deploy
           git reset --hard
+          git rm -rf .
 
-          # Dọn sạch repo (không dùng git rm nữa)
-          rm -rf *
-          rm -rf .[!.]* ..?* || true
-
-          # Copy build vào
+          # Copy build từ thư mục tạm
           cp -r temp-deploy/* .
 
           git add .
           git commit -m "$COMMIT_MSG"
           git push origin deploy --force
-
-          # Xóa temp
-          rm -rf temp-deploy
-      
