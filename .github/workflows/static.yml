@@ -45,9 +45,9 @@ jobs:
           # Lưu commit message hiện tại
           COMMIT_MSG=$(git log -1 --pretty=%B)
 
-          # Backup build folder
-          mkdir temp-deploy
-          cp -r build/jaspr/* temp-deploy/
+          # Backup build folder ra thư mục tạm ngoài Git
+          TEMP_DEPLOY_DIR=$(mktemp -d)
+          cp -r build/jaspr/* "$TEMP_DEPLOY_DIR"
 
           # Clean workspace để tránh lỗi khi switch branch
           git reset --hard
@@ -60,12 +60,12 @@ jobs:
             git checkout --orphan deploy
           fi
 
-          # Xóa tất cả nội dung trong branch
+          # Xóa toàn bộ file trong branch (trừ .git)
           rm -rf *
-          rm -rf .[^.]* || true  # xóa các file ẩn như .gitignore nếu có (trừ .git)
+          rm -rf .[^.]* || true
 
-          # Copy lại build
-          cp -r ../temp-deploy/* .
+          # Copy lại build từ thư mục tạm
+          cp -r "$TEMP_DEPLOY_DIR"/* .
 
           # Commit nếu có thay đổi
           git add .
