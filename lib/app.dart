@@ -1,3 +1,4 @@
+import 'package:first_jaspr_webpage/pages/not_found_page.dart';
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_router/jaspr_router.dart';
 
@@ -23,10 +24,13 @@ class App extends StatelessComponent {
     // Renders a <div class="main"> html element with children.
     yield div(classes: 'main', [
       const Header(),
-      Router(routes: [
-        Route(path: '/', title: 'Home', builder: (context, state) => const Home()),
-        Route(path: '/about', title: 'About', builder: (context, state) => const About()),
-      ]),
+      Router(
+        routes: [
+          Route(path: '/', title: 'Home', builder: (context, state) => const Home()),
+          Route(path: '/about', title: 'About', builder: (context, state) => const About()),
+        ],
+        errorBuilder: (context, error) => NotFoundPage()
+      ),
     ]);
   }
 
