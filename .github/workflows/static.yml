@@ -30,7 +30,7 @@ jobs:
       - name: Add _redirects file for SPA routing
         run: |
           mkdir -p build/jaspr
-          echo '/* /index.html 404' > build/jaspr/_redirects
+          echo '/*    /index.html    200' > build/jaspr/_redirects
 
       - name: Deploy to deploy branch (for Cloudflare Pages)
         run: |
