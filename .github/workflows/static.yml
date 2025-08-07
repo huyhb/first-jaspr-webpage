@@ -40,32 +40,32 @@ jobs:
           git config user.name "huyhb"
           git config user.email "huyhbs@github.com"
 
-          # Lưu commit message hiện tại của nhánh master
+          # Lưu commit message hiện tại
           COMMIT_MSG=$(git log -1 --pretty=%B)
 
-          # Tạo thư mục tạm chứa build
+          # Lưu build tạm thời
           mkdir temp-deploy
           cp -r build/jaspr/* temp-deploy/
 
-          # Kiểm tra nếu nhánh deploy đã tồn tại trên origin
+          # Dọn dẹp mọi thay đổi để có thể checkout
+          git reset --hard
+          git clean -fd
+
+          # Kiểm tra nếu nhánh deploy đã tồn tại
           if git ls-remote --exit-code --heads origin deploy; then
-            # Nhánh deploy đã tồn tại
             git fetch origin deploy
             git checkout deploy
           else
-            # Nhánh deploy chưa có, tạo từ nhánh hiện tại (master)
-            git checkout -b deploy
+            git checkout --orphan deploy
           fi
 
-          # Xoá toàn bộ nội dung cũ trong deploy branch
+          # Xóa toàn bộ nội dung cũ
           git rm -rf . || true
 
-          # Copy build mới vào
+          # Chép lại build
           cp -r temp-deploy/* .
 
           # Commit nếu có thay đổi
           git add .
           git commit -m "$COMMIT_MSG" || echo "No changes to commit"
-
-          # Push lên deploy
           git push origin deploy
