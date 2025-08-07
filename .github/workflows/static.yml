@@ -34,38 +34,42 @@ jobs:
           mkdir -p build/jaspr
           echo '/*    /index.html    200' > build/jaspr/_redirects
 
-      - name: Deploy to deploy branch (for Cloudflare Pages)
+      - name: Deploy to deploy branch (Cloudflare Pages)
         run: |
-          set -e
+          set -e  # dừng ngay nếu có lỗi
+
+          # Setup Git
           git config user.name "huyhb"
           git config user.email "huyhbs@github.com"
 
           # Lưu commit message hiện tại
           COMMIT_MSG=$(git log -1 --pretty=%B)
 
-          # Lưu build tạm thời
+          # Backup build folder
           mkdir temp-deploy
           cp -r build/jaspr/* temp-deploy/
 
-          # Dọn dẹp mọi thay đổi để có thể checkout
+          # Clean workspace để tránh lỗi khi switch branch
           git reset --hard
           git clean -fd
 
-          # Kiểm tra nếu nhánh deploy đã tồn tại
-          if git ls-remote --exit-code --heads origin deploy; then
-            git fetch origin deploy
+          # Tạo hoặc chuyển sang nhánh deploy
+          if git show-ref --quiet refs/heads/deploy; then
             git checkout deploy
           else
             git checkout --orphan deploy
           fi
 
-          # Xóa toàn bộ nội dung cũ
-          git rm -rf . || true
+          # Xóa tất cả nội dung trong branch
+          rm -rf *
+          rm -rf .[^.]* || true  # xóa các file ẩn như .gitignore nếu có (trừ .git)
 
-          # Chép lại build
-          cp -r temp-deploy/* .
+          # Copy lại build
+          cp -r ../temp-deploy/* .
 
           # Commit nếu có thay đổi
           git add .
-          git commit -m "$COMMIT_MSG" || echo "No changes to commit"
-          git push origin deploy
+          git diff --cached --quiet || git commit -m "$COMMIT_MSG"
+
+          # Push force vì nhánh deploy là độc lập
+          git push origin deploy --force
