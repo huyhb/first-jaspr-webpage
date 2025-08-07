@@ -37,20 +37,17 @@ jobs:
       - name: Deploy to deploy branch (for Cloudflare Pages)
         run: |
           git config user.name "huyhb"
-          git config user.email "huyhbs@github.com"
+          git config user.email "huyhb@github.com"
 
           # Tạo thư mục tạm chứa build từ nhánh hiện tại
           mkdir temp-deploy
           cp -r build/jaspr/* temp-deploy/
 
-          # Lấy version từ pubspec.yaml
-          VERSION=$(grep '^version:' pubspec.yaml | cut -d ':' -f2 | cut -d '+' -f1 | xargs)
-          TODAY=$(date +"%d/%m/%Y %H:%M")
-          COMMIT_MSG="deploy version $VERSION - $TODAY"
+          # Lấy commit message gần nhất
+          COMMIT_MSG=$(git log -1 --pretty=%B)
 
           # Tạo nhánh deploy (orphan)
-          git switch --orphan deploy
-          git reset --hard
+          git checkout deploy || git checkout -b deploy
           git rm -rf . || true
 
           # Copy build từ thư mục tạm
